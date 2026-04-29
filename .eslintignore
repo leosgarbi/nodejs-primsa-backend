@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+coverage/
+.env*
+.vscode/
+.idea/
+*.lock
+*.log
+prisma/migrations/
+.next/

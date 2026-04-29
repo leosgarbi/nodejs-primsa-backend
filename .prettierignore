@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.next/
+*.config.js
+coverage/
+.env*
+.vscode/
+.idea/
+*.lock
+*.log
+prisma/migrations/
