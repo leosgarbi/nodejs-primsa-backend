@@ -43,11 +43,8 @@ bun install
 Copie o arquivo `.env.example` para `.env` e preencha as variáveis:
 
 ```bash
-<<<<<<< HEAD
 cp .env.example .env
-=======
 bun run dev
->>>>>>> da7e7d309f94b10c0394f9f4ce6c19e80d7f7222
 ```
 
 ```env
