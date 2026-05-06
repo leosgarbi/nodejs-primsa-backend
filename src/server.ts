@@ -1,31 +1,60 @@
-import { buildApp } from "./app";
-import { env } from "./env";
+import Fastify from 'fastify';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUI from '@fastify/swagger-ui';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import { CreateUser } from './routes/users/create-user';
+import { GetUsers } from './routes/users/get-users';
+import { GetUserById } from './routes/users/get-by-id';
+import fastifyCookie from '@fastify/cookie';
+import fastifyJwt from '@fastify/jwt';
+import { Login } from './routes/auth/login';
+import { Me } from './routes/auth/me';
 
-async function main() {
-  const app = await buildApp();
+const app = Fastify();
 
-  try {
-    app.listen({ port: env.PORT, host: env.HOST });
-    app.log.info(`Servidor iniciado 🚀, ${env.HOST}:${env.PORT}`);
-  } catch (err) {
-    app.log.error(`Erro ao iniciar o servidor: ${err}`);
-    process.exit(1);
-  }
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
 
-  const shutdown = async (signal: string) => {
-    app.log.info(`Recebido sinal ${signal}, fechando o servidor...`);
-    try {
-      await app.close();
-      app.log.info("Servidor fechado com sucesso");
-      process.exit(0);
-    } catch (err) {
-      app.log.error(`Erro ao fechar o servidor: ${err}`);
-      process.exit(1);
-    }
-  };
+app.register(fastifySwagger, {
+	openapi: {
+		info: {
+			title: 'Aula Backend',
+			description: 'Uma API para aula de backend',
+			version: '1.0.0',
+		},
+		components: {
+			securitySchemes: {
+				cookieAuth: {
+					type: 'apiKey',
+					name: 'token',
+					in: 'cookie',
+				},
+			},
+		},
+	},
+	transform: jsonSchemaTransform,
+});
 
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-}
+app.register(fastifySwaggerUI, {
+	routePrefix: '/docs',
+});
 
-main();
+app.register(fastifyCookie);
+app.register(fastifyJwt, {
+	secret: 'supersecret',
+	cookie: {
+		cookieName: 'token',
+		signed: false,
+	},
+});
+//Registro das rotas
+app.register(CreateUser);
+app.register(GetUsers);
+app.register(GetUserById);
+
+app.register(Login);
+app.register(Me);
+
+app.listen({ port: 3333 }).then(() => {
+	console.log('Servidor iniciado 🚀, porta 3333');
+});
